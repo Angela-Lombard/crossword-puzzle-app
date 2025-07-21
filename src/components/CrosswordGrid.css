@@ -1,35 +1,85 @@
 /* src/components/CrosswordGrid.css */
-.crossword-table {
-    border-collapse: collapse;
-    margin: auto;
-  }
-  
-  .crossword-table td {
-    width: 32px;
-    height: 32px;
-    text-align: center;
-    vertical-align: middle;
-    padding: 0;
-    position: relative;
-  }
-  
-  .filled {
-    border: 1px solid #888;
-    background-color: white;
-  }
-  
-  .blank {
-    background-color: transparent;
-  }
-  
-  .crossword-table input {
-    width: 100%;
-    height: 100%;
-    font-size: 18px;
-    font-weight: bold;
-    text-align: center;
-    border: none;
-    outline: none;
-    text-transform: uppercase;
-  }
+
+/* TEST: This should make the entire table extremely visible */
+.crossword-table-test {
+  border-collapse: collapse;
+  margin: 20px auto;
+  background-color: #ff00ff !important; /* Bright magenta background */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  border: 10px solid #00ffff !important; /* Cyan border */
+}
+
+.crossword-table-test td {
+  width: 35px;
+  height: 35px;
+  text-align: center;
+  vertical-align: middle;
+  padding: 0;
+  position: relative;
+  border: 1px solid transparent;
+}
+
+/* Test: Make ALL filled cells bright red to see if any CSS is working */
+.crossword-table-test td.filled {
+  border: 1px solid #777;
+  background-color: red !important;
+}
+
+.crossword-table-test td.empty {
+  background-color: transparent;
+  border: none;
+}
+
+/* Test: Make highlighted cells bright green */
+.crossword-table-test td.highlighted {
+  background-color: lime !important;
+  border: 5px solid purple !important;
+}
+
+/* Test: Make focused cells bright blue */
+.crossword-table-test td.focused {
+  background-color: blue !important;
+  outline: 5px solid yellow !important;
+}
+
+.crossword-table-test td.incorrect {
+  position: relative;
+  background-color: #fff5f5 !important;
+}
+
+.crossword-table-test td.incorrect input {
+  color: #dc3545 !important;
+  font-weight: bold;
+}
+
+.crossword-table-test td.incorrect::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 10%;
+  right: 10%;
+  height: 2px;
+  background-color: #dc3545;
+  transform: translateY(-50%);
+  z-index: 10;
+  pointer-events: none;
+}
+
+.crossword-table-test input {
+  width: 100%;
+  height: 100%;
+  font-size: 18px;
+  font-weight: bold;
+  color: #333;
+  text-align: center;
+  border: none;
+  outline: none;
+  background-color: transparent !important;
+  text-transform: uppercase;
+}
+
+.crossword-table-test input:focus {
+  background-color: transparent !important;
+}
   
