@@ -1,0 +1,35 @@
+/* src/components/CrosswordGrid.css */
+.crossword-table {
+    border-collapse: collapse;
+    margin: auto;
+  }
+  
+  .crossword-table td {
+    width: 32px;
+    height: 32px;
+    text-align: center;
+    vertical-align: middle;
+    padding: 0;
+    position: relative;
+  }
+  
+  .filled {
+    border: 1px solid #888;
+    background-color: white;
+  }
+  
+  .blank {
+    background-color: transparent;
+  }
+  
+  .crossword-table input {
+    width: 100%;
+    height: 100%;
+    font-size: 18px;
+    font-weight: bold;
+    text-align: center;
+    border: none;
+    outline: none;
+    text-transform: uppercase;
+  }
+  
