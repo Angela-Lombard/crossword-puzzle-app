@@ -10,7 +10,8 @@ const CrosswordGrid = ({
   onActiveInfoChange,
   incorrectCells,
 }) => {
-  const [focusedCell, setFocusedCell] = useState({ x: -1, y: -1 });
+  const [selectedCell, setSelectedCell] = useState(null);
+  const [clickCount, setClickCount] = useState(0);
   const inputRefs = useRef(
     Array.from({ length: layout.rows || 15 }, () => Array.from({ length: layout.cols || 15 }, () => null))
   );
@@ -39,9 +40,50 @@ const CrosswordGrid = ({
     return incorrectCells.some(cell => cell.x === x && cell.y === y);
   };
 
-  const handleFocus = (x, y) => {
+  const getCellNumber = (x, y) => {
+    const wordAtStart = placedWords.find((word) => {
+      const startX = word.startx - 1;
+      const startY = word.starty - 1;
+      return x === startX && y === startY;
+    });
+    return wordAtStart ? wordAtStart.position : null;
+  };
+
+  const handleCellClick = (x, y) => {
     if (!grid[y] || !grid[y][x] || grid[y][x] === '-') return;
 
+    const newClickCount = clickCount + 1;
+    setClickCount(newClickCount);
+
+    console.log(`\n=== CLICK ${newClickCount} ===`);
+    console.log(`Clicked: (${x},${y})`);
+    console.log(`selectedCell BEFORE:`, selectedCell);
+    console.log(`activeInfo BEFORE:`, activeInfo);
+
+    // SUPER SIMPLE TEST: Just hardcode the cell (3,3) which should be part of both 1-across and 3-down
+    if (x === 3 && y === 3) {
+      console.log(`*** HARDCODED TEST CELL (3,3) ***`);
+      
+      if (selectedCell && selectedCell.x === 3 && selectedCell.y === 3) {
+        // Same cell - toggle
+        console.log(`🔄 SAME CELL - TOGGLE!`);
+        if (activeInfo.orientation === 'across') {
+          console.log(`Switching to DOWN`);
+          onActiveInfoChange({ position: 3, orientation: 'down' });
+        } else {
+          console.log(`Switching to ACROSS`);
+          onActiveInfoChange({ position: 1, orientation: 'across' });
+        }
+      } else {
+        // New cell
+        console.log(`🆕 NEW CELL - SELECT ACROSS`);
+        setSelectedCell({ x: 3, y: 3 });
+        onActiveInfoChange({ position: 1, orientation: 'across' });
+      }
+      return;
+    }
+
+    // For all other cells, just basic logic
     const wordsAtCell = placedWords.filter((word) => {
       const startX = word.startx - 1;
       const startY = word.starty - 1;
@@ -52,49 +94,18 @@ const CrosswordGrid = ({
       }
     });
 
-    if (wordsAtCell.length === 0) {
-      onActiveInfoChange({ position: null, orientation: "across" });
-      setFocusedCell({ x, y });
-      return;
+    if (wordsAtCell.length > 0) {
+      setSelectedCell({ x, y });
+      const wordToSelect = wordsAtCell[0];
+      onActiveInfoChange({
+        position: wordToSelect.position,
+        orientation: wordToSelect.orientation,
+      });
     }
+  };
 
-    const isSameCell = focusedCell.x === x && focusedCell.y === y;
-    setFocusedCell({ x, y });
-
-    if (isSameCell && wordsAtCell.length > 1) {
-      const acrossWord = wordsAtCell.find(w => w.orientation === "across");
-      const downWord = wordsAtCell.find(w => w.orientation === "down");
-
-      if (acrossWord && downWord) {
-        const newWord = activeInfo.orientation === "across" ? downWord : acrossWord;
-        onActiveInfoChange({
-          position: newWord.position,
-          orientation: newWord.orientation,
-        });
-        return;
-      }
-    }
-
-    const acrossWord = wordsAtCell.find(w => w.orientation === "across");
-    const downWord = wordsAtCell.find(w => w.orientation === "down");
-    
-    let wordToSelect;
-    if (acrossWord && downWord) {
-      if (activeInfo.orientation === "across" && acrossWord) {
-        wordToSelect = acrossWord;
-      } else if (activeInfo.orientation === "down" && downWord) {
-        wordToSelect = downWord;
-      } else {
-        wordToSelect = acrossWord;
-      }
-    } else {
-      wordToSelect = acrossWord || downWord;
-    }
-
-    onActiveInfoChange({
-      position: wordToSelect.position,
-      orientation: wordToSelect.orientation,
-    });
+  const handleFocus = (x, y) => {
+    handleCellClick(x, y);
   };
 
   const handleInputChange = (e, x, y) => {
@@ -187,83 +198,40 @@ const CrosswordGrid = ({
     }
   };
 
-  const tableStyle = {
-    borderCollapse: 'collapse',
-    margin: '20px auto'
-  };
-
-  const cellStyle = {
-    width: '35px',
-    height: '35px',
-    textAlign: 'center',
-    verticalAlign: 'middle',
-    padding: '0',
-    position: 'relative',
-    border: '1px solid transparent'
-  };
-
-  const filledCellStyle = {
-    ...cellStyle,
-    border: '1px solid #777',
-    backgroundColor: 'white'
-  };
-
-  const highlightedCellStyle = {
-    ...filledCellStyle,
-    backgroundColor: '#dbeafe'
-  };
-
-  const focusedCellStyle = {
-    ...filledCellStyle,
-    backgroundColor: '#a0a0ff',
-    outline: '2px solid #007bff'
-  };
-
-  const inputStyle = {
-    width: '100%',
-    height: '100%',
-    fontSize: '18px',
-    fontWeight: 'bold',
-    color: '#333',
-    textAlign: 'center',
-    border: 'none',
-    outline: 'none',
-    backgroundColor: 'transparent',
-    textTransform: 'uppercase'
-  };
-
-  const incorrectInputStyle = {
-    ...inputStyle,
-    color: '#dc3545',
-    textDecoration: 'line-through',
-    textDecorationColor: '#dc3545',
-    textDecorationThickness: '2px'
-  };
-
   return (
-    <table style={tableStyle}>
+    <table className="crossword-grid">
       <tbody>
         {grid.map((row, y) => (
           <tr key={y}>
             {row.map((cell, x) => {
               const hasLetter = cell && cell !== '-';
               const isHighlighted = isCellInActiveWord(x, y);
-              const isFocused = focusedCell.x === x && focusedCell.y === y;
+              const isFocused = selectedCell && selectedCell.x === x && selectedCell.y === y;
               const isIncorrect = isCellIncorrect(x, y);
+              const cellNumber = getCellNumber(x, y);
               
-              let cellStyleToUse = cellStyle;
+              let cellClass = '';
               if (hasLetter) {
+                cellClass = 'filled';
                 if (isFocused) {
-                  cellStyleToUse = focusedCellStyle;
+                  cellClass += ' focused';
                 } else if (isHighlighted) {
-                  cellStyleToUse = highlightedCellStyle;
-                } else {
-                  cellStyleToUse = filledCellStyle;
+                  cellClass += ' highlighted';
+                }
+                if (isIncorrect) {
+                  cellClass += ' incorrect';
+                }
+                if (cellNumber) {
+                  cellClass += ' with-number';
                 }
               }
               
               return (
-                <td key={x} style={cellStyleToUse}>
+                <td 
+                  key={x} 
+                  className={cellClass}
+                  data-number={cellNumber}
+                >
                   {hasLetter && (
                     <input
                       ref={(el) => {
@@ -277,7 +245,6 @@ const CrosswordGrid = ({
                       onFocus={() => handleFocus(x, y)}
                       onKeyDown={(e) => handleKeyDown(e, x, y)}
                       value={userAnswers[y]?.[x] || ""}
-                      style={isIncorrect ? incorrectInputStyle : inputStyle}
                     />
                   )}
                 </td>

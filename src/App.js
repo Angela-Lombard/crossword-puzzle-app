@@ -15,6 +15,11 @@ const initialWords = [
 ];
 
 function App() {
+  const [currentScreen, setCurrentScreen] = useState("game"); // Always start with game
+  const [streak, setStreak] = useState(() => {
+    const saved = localStorage.getItem('crosswordStreak');
+    return saved ? parseInt(saved) : 0;
+  });
   const [layout, setLayout] = useState({ result: [], rows: 15, cols: 15 });
   const [userAnswers, setUserAnswers] = useState(
     Array(15)
@@ -30,6 +35,8 @@ function App() {
 
   const generateNewPuzzle = () => {
     const layoutData = crosswordLayoutGenerator.generateLayout(initialWords);
+    console.log('Generated puzzle layout:', layoutData);
+    console.log('Words in puzzle:', layoutData.result?.filter(w => w.orientation !== "none"));
     setLayout(layoutData);
     if (layoutData && layoutData.rows && layoutData.cols) {
       setUserAnswers(
@@ -41,6 +48,20 @@ function App() {
     setIsSolved(false);
     setIncorrectCells([]);
     setActiveInfo({ position: null, orientation: "across" });
+  };
+
+  const startNewGame = () => {
+    generateNewPuzzle();
+    setCurrentScreen("game");
+  };
+
+  const goToMainMenu = () => {
+    setCurrentScreen("game"); // Since we removed menu, just reload game
+    generateNewPuzzle();
+  };
+
+  const goToLeaderboard = () => {
+    setCurrentScreen("leaderboard");
   };
 
   useEffect(() => {
@@ -91,9 +112,16 @@ function App() {
       if (isSilent) {
         setTimeout(() => {
           setIsSolved(true);
+          // Update streak when puzzle is solved
+          const newStreak = streak + 1;
+          setStreak(newStreak);
+          localStorage.setItem('crosswordStreak', newStreak.toString());
         }, 250);
       } else {
         setIsSolved(true);
+        const newStreak = streak + 1;
+        setStreak(newStreak);
+        localStorage.setItem('crosswordStreak', newStreak.toString());
       }
     }
   };
@@ -108,19 +136,52 @@ function App() {
           w.orientation === activeInfo.orientation
       );
 
+  // Leaderboard Screen (simple placeholder for now)
+  if (currentScreen === "leaderboard") {
+    return (
+      <div className="App leaderboard-screen">
+        <div className="header">
+          <div className="logo-container">
+            <img src="/microMatrix.png" alt="micro matrix" className="logo-img" />
+          </div>
+          <div className="game-info">Week #: Category</div>
+        </div>
+        <div className="leaderboard-content">
+          <h2>Leaderboard</h2>
+          <p>Coming soon...</p>
+          <button onClick={goToMainMenu} className="menu-btn">
+            Back to Game
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Game Screen - Default and main screen
   return (
-    <div className="App">
+    <div className="App game-screen">
       {isSolved && <Confetti />}
-      {isSolved && <SuccessModal onPlayAgain={generateNewPuzzle} />}
-      <h1>🔤 Company Crossword</h1>
+      {isSolved && (
+        <SuccessModal 
+          onPlayAgain={startNewGame} 
+          onMainMenu={goToMainMenu}
+          onLeaderboard={goToLeaderboard}
+        />
+      )}
+      
+      <div className="header">
+        <div className="logo-container">
+          <img src="/microMatrix.png" alt="micro matrix" className="logo-img" />
+        </div>
+        <div className="game-info">Week #: Category</div>
+      </div>
+
       <div className="active-clue">
         {activeClue
-          ? `${activeClue.position}. ${
-              activeClue.orientation.charAt(0).toUpperCase() +
-              activeClue.orientation.slice(1)
-            }: ${activeClue.clue}`
-          : "Select a cell to see the clue"}
+          ? `${activeClue.position}. ${activeClue.clue}`
+          : "1. Insert clue here"}
       </div>
+
       <div className="puzzle-container">
         <CrosswordGrid
           layout={layout}
@@ -130,33 +191,8 @@ function App() {
           onActiveInfoChange={setActiveInfo}
           incorrectCells={incorrectCells}
         />
-        <div className="clues">
-          <h2>Clues</h2>
-          <ul>
-            {layout.result &&
-              layout.result
-                .filter((w) => w.orientation !== "none")
-                .map(({ clue, position, orientation, answer }) => (
-                  <li
-                    key={`${position}-${orientation}`}
-                    className={
-                      activeClue &&
-                      activeClue.position === position &&
-                      activeClue.orientation === orientation
-                        ? "active"
-                        : ""
-                    }
-                  >
-                    <strong>{`${position}. ${
-                      orientation.charAt(0).toUpperCase() +
-                      orientation.slice(1)
-                    }: `}</strong>
-                    {`${clue} (${answer.length})`}
-                  </li>
-                ))}
-          </ul>
-        </div>
       </div>
+
       <button onClick={() => checkAnswers(false)} className="check-button">
         Check Puzzle
       </button>
