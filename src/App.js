@@ -142,7 +142,7 @@ function App() {
       <div className="App leaderboard-screen">
         <div className="header">
           <div className="logo-container">
-            <img src="/microMatrix.png" alt="micro matrix" className="logo-img" />
+            <img src={process.env.PUBLIC_URL + "/microMatrix.png"} alt="micro matrix" className="logo-img" />
           </div>
           <div className="game-info">Week #: Category</div>
         </div>
@@ -171,7 +171,7 @@ function App() {
       
       <div className="header">
         <div className="logo-container">
-          <img src="/microMatrix.png" alt="micro matrix" className="logo-img" />
+          <img src={process.env.PUBLIC_URL + "/microMatrix.png"} alt="micro matrix" className="logo-img" />
         </div>
         <div className="game-info">Week #: Category</div>
       </div>
