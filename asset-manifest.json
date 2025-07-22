@@ -1,0 +1,15 @@
+{
+  "files": {
+    "main.css": "/crossword-puzzle-app/static/css/main.bba024fa.css",
+    "main.js": "/crossword-puzzle-app/static/js/main.2a9b1e9b.js",
+    "static/js/453.d67621b0.chunk.js": "/crossword-puzzle-app/static/js/453.d67621b0.chunk.js",
+    "index.html": "/crossword-puzzle-app/index.html",
+    "main.bba024fa.css.map": "/crossword-puzzle-app/static/css/main.bba024fa.css.map",
+    "main.2a9b1e9b.js.map": "/crossword-puzzle-app/static/js/main.2a9b1e9b.js.map",
+    "453.d67621b0.chunk.js.map": "/crossword-puzzle-app/static/js/453.d67621b0.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.bba024fa.css",
+    "static/js/main.2a9b1e9b.js"
+  ]
+}
