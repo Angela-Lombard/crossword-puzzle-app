@@ -12,7 +12,7 @@
 
 /* ===== GAME SCREEN & HEADER ===== */
 .game-screen, .leaderboard-screen {
-  background-color: #f8fafc;
+  background-color: white;
   min-height: 100vh;
   padding: 0;
 }
@@ -23,8 +23,8 @@
   justify-content: space-between;
   padding: 16px 24px;
   background-color: white;
-  border-bottom: 1px solid #e2e8f0;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border-bottom: none;
+  box-shadow: none;
 }
 
 .logo-container {
