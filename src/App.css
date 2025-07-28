@@ -17,6 +17,72 @@
   padding: 0;
 }
 
+/* ===== HOME SCREEN ===== */
+.home-screen {
+  background-image: url('./assets/home-background.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.home-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  z-index: 1;
+}
+
+.home-logo-container {
+  margin-bottom: 40px;
+}
+
+.home-logo {
+  height: 80px;
+  width: auto;
+  object-fit: contain;
+}
+
+.home-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 200px;
+}
+
+.home-btn {
+  padding: 16px 40px;
+  font-size: 18px;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background-color: #4285f4;
+  color: white;
+  text-transform: lowercase;
+}
+
+.home-btn:hover {
+  background-color: #3367d6;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(66, 133, 244, 0.4);
+}
+
+.play-btn {
+  background-color: #4285f4;
+}
+
+.leaderboard-btn {
+  background-color: #4285f4;
+}
+
 .header {
   display: flex;
   align-items: center;
@@ -25,23 +91,89 @@
   background-color: white;
   border-bottom: 1px solid #e2e8f0;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  position: relative;
 }
 
 .logo-container {
   display: flex;
   align-items: center;
+  flex: 0 0 auto;
+  transition: all 0.2s ease;
+  border-radius: 8px;
+  padding: 4px 8px;
+  margin: -4px -8px;
+}
+
+.logo-container:hover {
+  background-color: rgba(66, 133, 244, 0.1);
+  transform: scale(1.05);
 }
 
 .logo-img {
   height: 40px;
   width: auto;
   object-fit: contain;
+  transition: all 0.2s ease;
 }
 
 .game-info {
   font-size: 16px;
   color: #4285f4;
   font-weight: 600;
+}
+
+.game-info.centered {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+}
+
+.header-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 0 0 auto;
+}
+
+.timer {
+  font-size: 16px;
+  font-weight: 600;
+  color: #2d3748;
+  min-width: 50px;
+  text-align: center;
+}
+
+.control-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.control-btn:hover {
+  background-color: #f1f5f9;
+}
+
+.control-btn img {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+}
+
+.pause-btn img {
+  width: 16px;
+  height: 18px;
+}
+
+.home-btn img {
+  width: 20px;
+  height: 20px;
 }
 
 /* ===== GAME CONTENT ===== */
@@ -65,6 +197,73 @@
   margin: 20px 0;
 }
 
+/* ===== PAUSE OVERLAY ===== */
+.pause-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(248, 250, 252, 0.95);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.pause-modal {
+  background-color: white;
+  border-radius: 12px;
+  border: 2px solid #4285f4;
+  padding: 40px 60px;
+  text-align: center;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  min-width: 400px;
+  max-width: 500px;
+}
+
+.pause-modal h2 {
+  font-size: 28px;
+  color: #4285f4;
+  margin: 0 0 30px 0;
+  font-weight: 600;
+}
+
+.resume-btn, .main-menu-btn {
+  display: block;
+  width: 100%;
+  margin: 12px 0;
+  padding: 12px 24px;
+  font-size: 16px;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.resume-btn {
+  background-color: #4285f4;
+  color: white;
+}
+
+.resume-btn:hover {
+  background-color: #3367d6;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(66, 133, 244, 0.3);
+}
+
+.main-menu-btn {
+  background-color: #4285f4;
+  color: white;
+}
+
+.main-menu-btn:hover {
+  background-color: #3367d6;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(66, 133, 244, 0.3);
+}
+
 .check-button {
   display: block;
   margin: 30px auto;
@@ -86,41 +285,7 @@
 }
 
 /* ===== LEADERBOARD SCREEN ===== */
-.leaderboard-content {
-  max-width: 800px;
-  margin: 40px auto;
-  padding: 32px;
-  background-color: white;
-  border-radius: 12px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-  text-align: center;
-}
-
-.leaderboard-content h2 {
-  color: #1a202c;
-  margin-bottom: 20px;
-  font-size: 28px;
-}
-
-.menu-btn {
-  background-color: #4285f4;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  padding: 16px 40px;
-  font-size: 18px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  min-width: 200px;
-  text-transform: lowercase;
-}
-
-.menu-btn:hover {
-  background-color: #3367d6;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 16px rgba(66, 133, 244, 0.4);
-}
+/* Leaderboard content is now handled by the Leaderboard component */
 
 /* ===== RESPONSIVE DESIGN ===== */
 @media (max-width: 768px) {
@@ -132,19 +297,92 @@
     height: 32px;
   }
   
+  .logo-container {
+    padding: 3px 6px;
+    margin: -3px -6px;
+  }
+  
+  .logo-container:hover {
+    transform: scale(1.03);
+  }
+  
   .game-info {
     font-size: 14px;
+  }
+
+  .game-info.centered {
+    position: static;
+    transform: none;
+    flex: 1;
+    text-align: center;
+    margin: 0 16px;
+  }
+
+  .header-controls {
+    gap: 8px;
+  }
+
+  .timer {
+    font-size: 14px;
+    min-width: 45px;
+  }
+
+  .control-btn {
+    padding: 6px;
+  }
+
+  .control-btn img {
+    width: 18px;
+    height: 18px;
+  }
+
+  .pause-btn img {
+    width: 14px;
+    height: 16px;
+  }
+
+  .home-screen {
+    padding: 16px;
+  }
+
+  .home-logo {
+    height: 60px;
+  }
+
+  .home-logo-container {
+    margin-bottom: 30px;
+  }
+
+  .home-buttons {
+    min-width: 280px;
+    gap: 12px;
+  }
+
+  .home-btn {
+    padding: 14px 32px;
+    font-size: 16px;
+  }
+
+  .pause-modal {
+    margin: 20px;
+    padding: 30px 40px;
+    min-width: 320px;
+    max-width: 400px;
+  }
+
+  .pause-modal h2 {
+    font-size: 24px;
+    margin: 0 0 24px 0;
+  }
+
+  .resume-btn, .main-menu-btn {
+    padding: 14px 20px;
+    font-size: 16px;
   }
   
   .active-clue {
     margin: 16px;
     padding: 16px;
-    font-size: 16px;
-  }
-  
-  .menu-btn {
-    min-width: 160px;
-    padding: 14px 32px;
     font-size: 16px;
   }
 }

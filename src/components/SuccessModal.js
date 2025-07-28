@@ -1,10 +1,12 @@
-// src/components/SuccessModal.js
 import React from "react";
 import "./SuccessModal.css";
 
-const SuccessModal = ({ onPlayAgain, onMainMenu, onLeaderboard }) => (
+const SuccessModal = ({ onPlayAgain, onMainMenu, onLeaderboard, onClose }) => (
   <div className="modal-backdrop">
     <div className="modal-content">
+      <button className="modal-close-btn" onClick={onClose} aria-label="Close modal">
+        ×
+      </button>
       <div className="success-header">
         <h2>Success!</h2>
         <p>You've successfully completed this week's crossword puzzle.</p>

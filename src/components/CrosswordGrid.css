@@ -89,6 +89,40 @@
   color: white;
 }
 
+/* Intersection cells - show they can be toggled */
+.crossword-grid td.intersection {
+  position: relative;
+}
+
+.crossword-grid td.intersection::after {
+  content: '';
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+  width: 6px;
+  height: 6px;
+  background-color: #6b7280;
+  border-radius: 50%;
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.crossword-grid td.intersection.focused::after {
+  background-color: white;
+  opacity: 0.8;
+}
+
+.crossword-grid td.intersection.highlighted::after {
+  background-color: #3b82f6;
+  opacity: 0.7;
+}
+
+.crossword-grid td.intersection:hover::after {
+  opacity: 1;
+  transform: scale(1.2);
+  transition: all 0.15s ease;
+}
+
 /* Responsive design */
 @media (max-width: 768px) {
   .crossword-grid td {
