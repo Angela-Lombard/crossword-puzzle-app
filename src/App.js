@@ -14,28 +14,10 @@ const crosswordLayoutGenerator = require("crossword-layout-generator");
 
 // Raw puzzle data (will be obfuscated immediately)
 const rawPuzzleWords = [
-  // { clue: "Popular UI library", answer: "react" },
-  // { clue: "Runtime for JS", answer: "node" },
-  // { clue: "Cloud platform", answer: "aws" },
-  // { clue: "Search engine giant", answer: "google" },
-  // { clue: "Version control site", answer: "github" },
-  // { clue: "Commander, Bay", answer: "paul" },
-  // { clue: "We share business and five consecutive letters.", answer: "microsoft" },
-  // { clue: "Where the Dreamin began. Homeland.", answer: "california" },
-  // { clue: "Repair place.", answer: "techxpress" },
-  // { clue: "Goods and services giver.", answer: "vendor" },
-  // { clue: "Minds wander here. We have the solution.", answer: "cloud" },
-  // { clue: "The name of the mountain we summit?", answer: "one" },
-  // { clue: "Thank you for choosing us, biggest spender.", answer: "cdw" },
-  // { clue: "That product? Solid.", answer: "hardware" },
-  // { clue: "Neither here nor there on the scale of business.", answer: "smb" },
-  // { clue: "Our speediest asset", answer: "xvantage" },
-
     { clue: "We share business and five consecutive letters.", answer: "microsoft" },
     { clue: "That product? Solid.", answer: "hardware" },
     { clue: "Our speediest asset", answer: "xvantage" },
     { clue: "Where the Dreamin began. Homeland.", answer: "california" },
-    { clue: "Repair place.", answer: "techxpress" },
     { clue: "Minds wander here. We have the solution.", answer: "cloud" },
     { clue: "Goods and services giver.", answer: "vendor" },
     { clue: "Commander, Bay", answer: "paul" },
