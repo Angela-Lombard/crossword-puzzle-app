@@ -1,15 +1,16 @@
 {
   "files": {
-    "main.css": "/crossword-puzzle-app/static/css/main.bba024fa.css",
-    "main.js": "/crossword-puzzle-app/static/js/main.e401ea33.js",
+    "main.css": "/crossword-puzzle-app/static/css/main.e0e808c9.css",
+    "main.js": "/crossword-puzzle-app/static/js/main.29d3ba29.js",
     "static/js/453.d67621b0.chunk.js": "/crossword-puzzle-app/static/js/453.d67621b0.chunk.js",
+    "static/media/home-background.jpg": "/crossword-puzzle-app/static/media/home-background.4942ee6b866169bb0905.jpg",
     "index.html": "/crossword-puzzle-app/index.html",
-    "main.bba024fa.css.map": "/crossword-puzzle-app/static/css/main.bba024fa.css.map",
-    "main.e401ea33.js.map": "/crossword-puzzle-app/static/js/main.e401ea33.js.map",
+    "main.e0e808c9.css.map": "/crossword-puzzle-app/static/css/main.e0e808c9.css.map",
+    "main.29d3ba29.js.map": "/crossword-puzzle-app/static/js/main.29d3ba29.js.map",
     "453.d67621b0.chunk.js.map": "/crossword-puzzle-app/static/js/453.d67621b0.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.bba024fa.css",
-    "static/js/main.e401ea33.js"
+    "static/css/main.e0e808c9.css",
+    "static/js/main.29d3ba29.js"
   ]
 }
