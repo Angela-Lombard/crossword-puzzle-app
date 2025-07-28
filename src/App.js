@@ -98,6 +98,7 @@ function App() {
     setCurrentScreen("home");
     setTime(0);
     setIsPaused(false);
+    setIncorrectCells([]);
   };
 
   const startGame = () => {
@@ -105,6 +106,7 @@ function App() {
     setCurrentScreen("game");
     setTime(0);
     setIsPaused(false);
+    setIncorrectCells([]);
   };
 
   const generateNewPuzzle = () => {
@@ -147,6 +149,7 @@ function App() {
     setTime(0);
     setIsPaused(false);
     setShowSuccessModal(false);
+    setIncorrectCells([]);
   };
 
   const goToMainMenu = () => {
@@ -156,6 +159,7 @@ function App() {
     setIsSolved(false);
     setShowSuccessModal(false);
     setCompletedPuzzleState(null); // Clear completed puzzle state
+    setIncorrectCells([]);
   };
 
   const goToCompletedPuzzle = () => {
@@ -213,84 +217,76 @@ function App() {
 
   useEffect(() => {
     if (layout.result && layout.result.length > 0) {
-      checkAnswers(true);
+      checkForCompletion();
     }
   }, [userAnswers, layout.result]);
+
+  // Check if puzzle is completed (for automatic success detection)
+  const checkForCompletion = () => {
+    if (!layout.result) return;
+    
+    let allFilled = true;
+    let allCorrect = true;
+    const placedWords = layout.result.filter((w) => w.orientation !== "none");
+    
+    placedWords.forEach((word) => {
+      for (let i = 0; i < word.answer.length; i++) {
+        const x = word.orientation === "across" ? word.startx - 1 + i : word.startx - 1;
+        const y = word.orientation === "down" ? word.starty - 1 + i : word.starty - 1;
+        
+        const userInput = userAnswers[y]?.[x];
+        const correctLetter = word.answer[i].toUpperCase();
+        
+        if (!userInput) {
+          allFilled = false;
+        } else if (userInput.toUpperCase() !== correctLetter) {
+          allCorrect = false;
+        }
+      }
+    });
+
+    // Only trigger success when puzzle is completely filled and correct
+    if (allFilled && allCorrect) {
+      setIsSolved(true);
+      setShowSuccessModal(true);
+      const newStreak = streak + 1;
+      setStreak(newStreak);
+      localStorage.setItem('crosswordStreak', newStreak.toString());
+    }
+  };
 
   const handleCellChange = (x, y, value) => {
     const newUserAnswers = [...userAnswers];
     newUserAnswers[y][x] = value.toUpperCase();
     setUserAnswers(newUserAnswers);
+    // Clear incorrect marking for this cell when user types
     setIncorrectCells(prev => prev.filter((c) => c.x !== x || c.y !== y));
   };
 
   // Enhanced answer checking with secure validation
-  const checkAnswers = (isSilent = false) => {
+  const checkAnswers = () => {
     if (!layout.result) return;
     const incorrect = [];
-    let allFilled = true;
     const placedWords = layout.result.filter((w) => w.orientation !== "none");
     
     placedWords.forEach((word) => {
-      // Get user's answer for this word
-      let userAnswer = '';
+      // Check each cell in this word
       for (let i = 0; i < word.answer.length; i++) {
         const x = word.orientation === "across" ? word.startx - 1 + i : word.startx - 1;
         const y = word.orientation === "down" ? word.starty - 1 + i : word.starty - 1;
         
-        if (!userAnswers[y]?.[x]) {
-          allFilled = false;
-          userAnswer += '';
-        } else {
-          userAnswer += userAnswers[y][x];
-        }
-      }
-      
-      // Find matching puzzle data for validation
-      const puzzleWord = puzzleData.find(p => 
-        decodeMultiLayer(p.encodedAnswer).toUpperCase() === word.answer.toUpperCase()
-      );
-      
-      if (puzzleWord && userAnswer.length === puzzleWord.length) {
-        // Use secure validation method
-        const isCorrect = validateAnswer(userAnswer, puzzleWord.encodedAnswer, puzzleWord.answerHash);
+        const userInput = userAnswers[y]?.[x];
+        const correctLetter = word.answer[i].toUpperCase();
         
-        if (!isCorrect) {
-          // Mark incorrect cells
-          for (let i = 0; i < word.answer.length; i++) {
-            const x = word.orientation === "across" ? word.startx - 1 + i : word.startx - 1;
-            const y = word.orientation === "down" ? word.starty - 1 + i : word.starty - 1;
-            if (userAnswers[y]?.[x] && userAnswers[y][x] !== word.answer[i].toUpperCase()) {
-              incorrect.push({ x, y });
-            }
-          }
+        // Only mark as incorrect if user has input and it's wrong
+        if (userInput && userInput.toUpperCase() !== correctLetter) {
+          incorrect.push({ x, y });
         }
       }
     });
 
-    const isPuzzleSolved = incorrect.length === 0 && allFilled;
-
-    if (!isSilent) {
-      setIncorrectCells(incorrect);
-    }
-
-    if (isPuzzleSolved) {
-      if (isSilent) {
-        setTimeout(() => {
-          setIsSolved(true);
-          setShowSuccessModal(true);
-          const newStreak = streak + 1;
-          setStreak(newStreak);
-          localStorage.setItem('crosswordStreak', newStreak.toString());
-        }, 250);
-      } else {
-        setIsSolved(true);
-        setShowSuccessModal(true);
-        const newStreak = streak + 1;
-        setStreak(newStreak);
-        localStorage.setItem('crosswordStreak', newStreak.toString());
-      }
-    }
+    // Set incorrect cells for red highlighting
+    setIncorrectCells(incorrect);
   };
 
   const activeClue =
@@ -410,7 +406,7 @@ function App() {
           : "1. Insert clue here"}
       </div>
 
-      <button onClick={() => checkAnswers(false)} className="check-button">
+      <button onClick={() => checkAnswers()} className="check-button">
         Check Puzzle
       </button>
     </div>
