@@ -2,7 +2,7 @@
   "name": "react-crossword-app",
   "version": "0.1.0",
   "private": true,
-  "homepage": "https://Angela-Lombard.github.io/crossword-puzzle-app",
+  "homepage": "https://micromatrix.app",
   "dependencies": {
     "@testing-library/dom": "^10.4.0",
     "@testing-library/jest-dom": "^6.6.3",

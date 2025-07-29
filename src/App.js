@@ -420,6 +420,12 @@ function App() {
       </div>
 
       <div className="puzzle-container">
+        <div className="active-clue">
+          {activeClue
+            ? `${activeClue.position}. ${activeClue.clue}`
+            : "1. Insert clue here"}
+        </div>
+        
         <CrosswordGrid
           layout={layout}
           onCellChange={handleCellChange}
@@ -428,12 +434,6 @@ function App() {
           onActiveInfoChange={setActiveInfo}
           incorrectCells={incorrectCells}
         />
-      </div>
-
-      <div className="active-clue">
-        {activeClue
-          ? `${activeClue.position}. ${activeClue.clue}`
-          : "1. Insert clue here"}
       </div>
 
       <button onClick={() => checkAnswers()} className="check-button">
