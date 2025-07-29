@@ -109,23 +109,13 @@ const addAntiDebugProtection = () => {
   // Check periodically
   setInterval(detectDevTools, 1000);
   
-  // Console warning
-  console.clear();
-  console.log('%cStop!', 'color: red; font-size: 50px; font-weight: bold;');
-  console.log('%cThis is a browser feature intended for developers. Puzzle answers are protected.', 'color: red; font-size: 16px;');
-  
-  // Override console methods to clear sensitive data
-  const originalLog = console.log;
-  console.log = function(...args) {
-    const sensitivePatterns = ['answer', 'solution', 'react', 'node', 'aws', 'google', 'github'];
-    const argStr = args.join(' ').toLowerCase();
-    
-    if (sensitivePatterns.some(pattern => argStr.includes(pattern))) {
-      originalLog.call(console, '🔒 Sensitive data blocked');
-      return;
-    }
-    originalLog.apply(console, args);
-  };
+  try {
+    console.clear();
+    console.log('%cStop!', 'color: red; font-size: 50px; font-weight: bold;');
+    console.log('%cThis is a browser feature intended for developers. Puzzle answers are protected.', 'color: red; font-size: 16px;');
+  } catch (e) {
+    // ignore
+  }
 };
 
 export {

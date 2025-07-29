@@ -10,6 +10,37 @@ import {
   validateAnswer, 
   addAntiDebugProtection 
 } from "./utils/puzzleSecurity";
+
+// Console protection
+(() => {
+  const blocked = ['microsoft', 'hardware', 'xvantage', 'california', 'cloud', 'vendor', 'paul', 'one', 'cdw', 'smb', 'answer', 'solution', 'clue', 'puzzle', 'crossword', 'layout', 'word', 'across', 'down', 'business', 'solid', 'speediest', 'dreamin', 'homeland', 'minds', 'wander', 'goods', 'services', 'commander', 'bay', 'mountain', 'summit', 'choosing', 'biggest', 'spender', 'neither', 'scale'];
+  
+  const filter = function(orig, ...args) {
+    const str = args.join(' ').toLowerCase();
+    if (blocked.some(term => str.includes(term)) || 
+        /\d+\.\d{10,}/.test(str) ||
+        args.some(arg => typeof arg === 'object' && arg !== null)) {
+      return;
+    }
+    orig.apply(console, args);
+  };
+  
+  const origLog = console.log;
+  const origError = console.error;
+  const origWarn = console.warn;
+  const origInfo = console.info;
+  
+  console.log = (...args) => filter(origLog, ...args);
+  console.error = (...args) => filter(origError, ...args);
+  console.warn = (...args) => filter(origWarn, ...args);
+  console.info = (...args) => filter(origInfo, ...args);
+  
+  Object.defineProperty(console, 'log', { writable: false, configurable: false });
+  Object.defineProperty(console, 'error', { writable: false, configurable: false });
+  Object.defineProperty(console, 'warn', { writable: false, configurable: false });
+  Object.defineProperty(console, 'info', { writable: false, configurable: false });
+})();
+
 const crosswordLayoutGenerator = require("crossword-layout-generator");
 
 // Raw puzzle data (will be obfuscated immediately)
@@ -211,7 +242,6 @@ function App() {
 
   useEffect(() => {
     generateNewPuzzle();
-    // Initialize anti-debugging protection
     addAntiDebugProtection();
   }, []);
 
