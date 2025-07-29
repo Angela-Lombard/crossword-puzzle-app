@@ -6,16 +6,6 @@
       "src": "favicon.svg",
       "sizes": "any",
       "type": "image/svg+xml"
-    },
-    {
-      "src": "microMatrix.png",
-      "type": "image/png",
-      "sizes": "192x192"
-    },
-    {
-      "src": "Micro Matrix.png",
-      "type": "image/png",
-      "sizes": "512x512"
     }
   ],
   "start_url": ".",

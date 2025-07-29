@@ -1,5 +1,5 @@
 // src/components/CrosswordGrid.js
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import "./CrosswordGrid.css";
 
 const CrosswordGrid = ({
@@ -11,9 +11,19 @@ const CrosswordGrid = ({
   incorrectCells,
 }) => {
   const [selectedCell, setSelectedCell] = useState(null);
+  const [isMobileDevice, setIsMobileDevice] = useState(false);
   const inputRefs = useRef(
     Array.from({ length: layout.rows || 15 }, () => Array.from({ length: layout.cols || 15 }, () => null))
   );
+
+  // Detect mobile device on component mount
+  useEffect(() => {
+    const checkMobileDevice = () => {
+      return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+             (typeof window !== 'undefined' && window.innerWidth <= 768);
+    };
+    setIsMobileDevice(checkMobileDevice());
+  }, []);
 
   const grid = layout.table || [];
   const placedWords = layout.result ? layout.result.filter(w => w.orientation !== "none") : [];
@@ -63,24 +73,18 @@ const CrosswordGrid = ({
 
     if (wordsAtCell.length === 0) return;
 
-    // Check if user clicked on the same cell as currently selected
     const isSameCell = selectedCell && selectedCell.x === x && selectedCell.y === y;
     
-    // Check if this cell is part of the currently active word
     const currentActiveWord = wordsAtCell.find(
       word => word.position === activeInfo.position && word.orientation === activeInfo.orientation
     );
     
-    // If clicking the same cell or clicking a cell that's part of current active word 
-    // and there are multiple words at this intersection, toggle direction
     if ((isSameCell || currentActiveWord) && wordsAtCell.length > 1) {
-      // Find the current word in the list
       const currentWordIndex = wordsAtCell.findIndex(
         word => word.position === activeInfo.position && word.orientation === activeInfo.orientation
       );
       
       if (currentWordIndex !== -1) {
-        // Switch to the next word in the list (cycling through all words at this cell)
         const nextWordIndex = (currentWordIndex + 1) % wordsAtCell.length;
         const nextWord = wordsAtCell[nextWordIndex];
         
@@ -90,7 +94,6 @@ const CrosswordGrid = ({
           orientation: nextWord.orientation,
         });
       } else {
-        // Fallback: if current word not found, pick a different orientation
         const currentOrientation = activeInfo.orientation;
         const differentWord = wordsAtCell.find(word => word.orientation !== currentOrientation);
         if (differentWord) {
@@ -100,7 +103,6 @@ const CrosswordGrid = ({
             orientation: differentWord.orientation,
           });
         } else {
-          // If no different orientation, just select the first word
           setSelectedCell({ x, y });
           onActiveInfoChange({
             position: wordsAtCell[0].position,
@@ -109,10 +111,8 @@ const CrosswordGrid = ({
         }
       }
     } else {
-      // New cell selection - prioritize "across" direction when first clicking a cell
       setSelectedCell({ x, y });
       
-      // If there's an across word at this position, select it; otherwise select the first word
       const acrossWord = wordsAtCell.find(word => word.orientation === "across");
       const wordToSelect = acrossWord || wordsAtCell[0];
       
@@ -124,8 +124,6 @@ const CrosswordGrid = ({
   };
 
   const handleFocus = (x, y) => {
-    // Only select the cell, don't change orientation during focus
-    // (orientation changes should only happen on actual clicks)
     if (!grid[y] || !grid[y][x] || grid[y][x] === '-') return;
     
     const wordsAtCell = placedWords.filter((word) => {
@@ -140,9 +138,7 @@ const CrosswordGrid = ({
 
     if (wordsAtCell.length > 0) {
       setSelectedCell({ x, y });
-      // Only change word if this cell is not part of the current active word
       if (!isCellInActiveWord(x, y)) {
-        // Prioritize "across" direction when focusing on a new cell
         const acrossWord = wordsAtCell.find(word => word.orientation === "across");
         const wordToSelect = acrossWord || wordsAtCell[0];
         onActiveInfoChange({
@@ -150,18 +146,44 @@ const CrosswordGrid = ({
           orientation: wordToSelect.orientation,
         });
       }
+      
+      // Mobile-specific behavior: select all text for easier editing
+      if (isMobileDevice) {
+        setTimeout(() => {
+          const inputElement = inputRefs.current[y]?.[x];
+          if (inputElement && userAnswers[y]?.[x]) {
+            // Select all text so typing replaces it
+            inputElement.select();
+            // Also set cursor to end as fallback
+            inputElement.setSelectionRange(inputElement.value.length, inputElement.value.length);
+          }
+        }, 0);
+      }
     }
   };
 
   const handleInputChange = (e, x, y) => {
     const value = e.target.value.toUpperCase();
-    onCellChange(x, y, value);
+    
+    // On mobile, ensure we only keep the last character typed if multiple chars somehow get entered
+    const finalValue = isMobileDevice && value.length > 1 ? value.slice(-1) : value;
+    
+    onCellChange(x, y, finalValue);
 
-    if (value && activeClue) {
+    // Mobile-specific: Ensure cursor is positioned correctly after input
+    if (isMobileDevice && finalValue) {
+      setTimeout(() => {
+        const inputElement = inputRefs.current[y]?.[x];
+        if (inputElement) {
+          inputElement.setSelectionRange(inputElement.value.length, inputElement.value.length);
+        }
+      }, 0);
+    }
+
+    if (finalValue && activeClue) {
       const startX = activeClue.startx - 1;
       const startY = activeClue.starty - 1;
       
-      // Find current position within the active word
       let currentIndex = -1;
       if (activeClue.orientation === "across") {
         currentIndex = x - startX;
@@ -169,7 +191,6 @@ const CrosswordGrid = ({
         currentIndex = y - startY;
       }
       
-      // Find the next empty cell in the same word
       let nextIndex = currentIndex + 1;
       while (nextIndex < activeClue.answer.length) {
         let nextX, nextY;
@@ -182,19 +203,16 @@ const CrosswordGrid = ({
           nextY = startY + nextIndex;
         }
         
-        // Check if the next cell exists and is part of this word
         if (nextX >= 0 && nextY >= 0 && 
             nextX < (grid[0]?.length || 0) && nextY < grid.length &&
             isCellInActiveWord(nextX, nextY)) {
           
-          // If the cell is empty, move focus there
           if (!userAnswers[nextY]?.[nextX] || userAnswers[nextY][nextX] === "") {
             setTimeout(() => {
               inputRefs.current[nextY]?.[nextX]?.focus();
             }, 0);
             break;
           }
-          // If the cell is filled, continue to the next one
           nextIndex++;
         } else {
           break;
@@ -204,77 +222,217 @@ const CrosswordGrid = ({
   };
 
   const handleKeyDown = (e, x, y) => {
-    if (e.key === "Backspace" && userAnswers[y]?.[x] === "" && activeClue) {
-      const startX = activeClue.startx - 1;
-      const startY = activeClue.starty - 1;
+    if (e.key === "Enter") {
+      e.preventDefault();
       
-      // Find current position within the active word
-      let currentIndex = -1;
-      if (activeClue.orientation === "across") {
-        currentIndex = x - startX;
+      const incompleteWords = placedWords.filter(word => {
+        const startX = word.startx - 1;
+        const startY = word.starty - 1;
+        
+        for (let i = 0; i < word.answer.length; i++) {
+          let cellX, cellY;
+          if (word.orientation === "across") {
+            cellX = startX + i;
+            cellY = startY;
+          } else {
+            cellX = startX;
+            cellY = startY + i;
+          }
+          
+          if (!userAnswers[cellY]?.[cellX] || userAnswers[cellY][cellX] === "") {
+            return true;
+          }
+        }
+        return false;
+      });
+      
+      if (incompleteWords.length === 0) return;
+      
+      const currentWordIndex = incompleteWords.findIndex(
+        word => word.position === activeInfo.position && word.orientation === activeInfo.orientation
+      );
+      
+      let nextWordIndex;
+      if (currentWordIndex === -1) {
+        nextWordIndex = 0;
       } else {
-        currentIndex = y - startY;
+        nextWordIndex = (currentWordIndex + 1) % incompleteWords.length;
       }
       
-      // Move to the previous position in the same word
-      const prevIndex = currentIndex - 1;
-      if (prevIndex >= 0) {
-        let prevX, prevY;
-        
-        if (activeClue.orientation === "across") {
-          prevX = startX + prevIndex;
-          prevY = startY;
+      const nextWord = incompleteWords[nextWordIndex];
+      
+      onActiveInfoChange({
+        position: nextWord.position,
+        orientation: nextWord.orientation,
+      });
+      
+      const nextStartX = nextWord.startx - 1;
+      const nextStartY = nextWord.starty - 1;
+      
+      for (let i = 0; i < nextWord.answer.length; i++) {
+        let cellX, cellY;
+        if (nextWord.orientation === "across") {
+          cellX = nextStartX + i;
+          cellY = nextStartY;
         } else {
-          prevX = startX;
-          prevY = startY + prevIndex;
+          cellX = nextStartX;
+          cellY = nextStartY + i;
         }
         
-        // Only move if the previous cell exists and is part of this word
-        if (prevX >= 0 && prevY >= 0 && 
-            prevX < (grid[0]?.length || 0) && prevY < grid.length &&
-            isCellInActiveWord(prevX, prevY)) {
+        if (!userAnswers[cellY]?.[cellX] || userAnswers[cellY][cellX] === "") {
           setTimeout(() => {
-            inputRefs.current[prevY]?.[prevX]?.focus();
+            inputRefs.current[cellY]?.[cellX]?.focus();
+            setSelectedCell({ x: cellX, y: cellY });
           }, 0);
+          break;
+        }
+      }
+      
+      return;
+    }
+    
+    if (e.key === "Backspace") {
+      // Mobile-specific backspace behavior
+      if (isMobileDevice) {
+        // Always clear current cell first, regardless of content
+        if (userAnswers[y]?.[x]) {
+          e.preventDefault();
+          onCellChange(x, y, "");
+          // Keep focus on current cell after clearing
+          setTimeout(() => {
+            const inputElement = inputRefs.current[y]?.[x];
+            if (inputElement) {
+              inputElement.focus();
+              inputElement.setSelectionRange(0, 0);
+            }
+          }, 0);
+          return;
+        }
+        // If current cell is empty, then move to previous cell
+        if (activeClue) {
+          e.preventDefault();
+          const startX = activeClue.startx - 1;
+          const startY = activeClue.starty - 1;
+          
+          let currentIndex = -1;
+          if (activeClue.orientation === "across") {
+            currentIndex = x - startX;
+          } else {
+            currentIndex = y - startY;
+          }
+          
+          const prevIndex = currentIndex - 1;
+          if (prevIndex >= 0) {
+            let prevX, prevY;
+            
+            if (activeClue.orientation === "across") {
+              prevX = startX + prevIndex;
+              prevY = startY;
+            } else {
+              prevX = startX;
+              prevY = startY + prevIndex;
+            }
+            
+            if (prevX >= 0 && prevY >= 0 && 
+                prevX < (grid[0]?.length || 0) && prevY < grid.length &&
+                isCellInActiveWord(prevX, prevY)) {
+              setTimeout(() => {
+                inputRefs.current[prevY]?.[prevX]?.focus();
+                setSelectedCell({ x: prevX, y: prevY });
+              }, 0);
+            }
+          }
+        }
+      } else {
+        // Desktop backspace behavior (original logic)
+        if (userAnswers[y]?.[x] === "" && activeClue) {
+          const startX = activeClue.startx - 1;
+          const startY = activeClue.starty - 1;
+          
+          let currentIndex = -1;
+          if (activeClue.orientation === "across") {
+            currentIndex = x - startX;
+          } else {
+            currentIndex = y - startY;
+          }
+          
+          const prevIndex = currentIndex - 1;
+          if (prevIndex >= 0) {
+            let prevX, prevY;
+            
+            if (activeClue.orientation === "across") {
+              prevX = startX + prevIndex;
+              prevY = startY;
+            } else {
+              prevX = startX;
+              prevY = startY + prevIndex;
+            }
+            
+            if (prevX >= 0 && prevY >= 0 && 
+                prevX < (grid[0]?.length || 0) && prevY < grid.length &&
+                isCellInActiveWord(prevX, prevY)) {
+              setTimeout(() => {
+                inputRefs.current[prevY]?.[prevX]?.focus();
+              }, 0);
+            }
+          }
         }
       }
     } else if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.key)) {
       e.preventDefault();
-      let currentX = x;
-      let currentY = y;
-
-      const move = () => {
-        switch (e.key) {
-          case "ArrowUp":
-            currentY--;
-            break;
-          case "ArrowDown":
-            currentY++;
-            break;
-          case "ArrowLeft":
-            currentX--;
-            break;
-          case "ArrowRight":
-            currentX++;
-            break;
+      
+      let targetX = x;
+      let targetY = y;
+      
+      switch (e.key) {
+        case "ArrowUp":
+          targetY = y - 1;
+          break;
+        case "ArrowDown":
+          targetY = y + 1;
+          break;
+        case "ArrowLeft":
+          targetX = x - 1;
+          break;
+        case "ArrowRight":
+          targetX = x + 1;
+          break;
+      }
+      
+      if (targetY >= 0 && targetY < grid.length && 
+          targetX >= 0 && targetX < (grid[0]?.length || 0) &&
+          grid[targetY] && grid[targetY][targetX] && grid[targetY][targetX] !== '-') {
+        
+        setTimeout(() => {
+          inputRefs.current[targetY]?.[targetX]?.focus();
+          setSelectedCell({ x: targetX, y: targetY });
+        }, 0);
+        
+        const wordsAtTargetCell = placedWords.filter((word) => {
+          const startX = word.startx - 1;
+          const startY = word.starty - 1;
+          if (word.orientation === "across") {
+            return targetY === startY && targetX >= startX && targetX < startX + word.answer.length;
+          } else {
+            return targetX === startX && targetY >= startY && targetY < startY + word.answer.length;
+          }
+        });
+        
+        if (wordsAtTargetCell.length > 0) {
+          const isPartOfCurrentWord = wordsAtTargetCell.some(
+            word => word.position === activeInfo.position && word.orientation === activeInfo.orientation
+          );
+          
+          if (!isPartOfCurrentWord) {
+            const acrossWord = wordsAtTargetCell.find(word => word.orientation === "across");
+            const wordToSelect = acrossWord || wordsAtTargetCell[0];
+            
+            onActiveInfoChange({
+              position: wordToSelect.position,
+              orientation: wordToSelect.orientation,
+            });
+          }
         }
-      };
-
-      move();
-
-      while (
-        currentY >= 0 &&
-        currentY < grid.length &&
-        currentX >= 0 &&
-        currentX < (grid[0]?.length || 0)
-      ) {
-        if (grid[currentY] && grid[currentY][currentX] && grid[currentY][currentX] !== '-') {
-          setTimeout(() => {
-            inputRefs.current[currentY]?.[currentX]?.focus();
-          }, 0);
-          return;
-        }
-        move();
       }
     }
   };
@@ -291,7 +449,6 @@ const CrosswordGrid = ({
               const isIncorrect = isCellIncorrect(x, y);
               const cellNumber = getCellNumber(x, y);
               
-              // Check if this cell has multiple words (intersection)
               const wordsAtCell = hasLetter ? placedWords.filter((word) => {
                 const startX = word.startx - 1;
                 const startY = word.starty - 1;
@@ -344,6 +501,15 @@ const CrosswordGrid = ({
                       onFocus={() => handleFocus(x, y)}
                       onKeyDown={(e) => handleKeyDown(e, x, y)}
                       value={userAnswers[y]?.[x] || ""}
+                      // Mobile-specific attributes for better input handling
+                      autoComplete="off"
+                      autoCorrect="off"
+                      autoCapitalize="characters"
+                      spellCheck="false"
+                      inputMode={isMobileDevice ? "text" : "text"}
+                      style={isMobileDevice ? {
+                        caretColor: 'transparent', // Hide cursor on mobile to avoid positioning issues
+                      } : {}}
                     />
                   )}
                 </td>

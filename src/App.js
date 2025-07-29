@@ -4,6 +4,9 @@ import CrosswordGrid from "./components/CrosswordGrid";
 import SuccessModal from "./components/SuccessModal";
 import Leaderboard from "./components/Leaderboard";
 import "./App.css";
+import microMatrixSvg from "./assets/microMatrix.svg";
+import homeSvg from "./assets/Home.svg";
+import pauseSvg from "./assets/Pause.svg";
 import { 
   createObfuscatedPuzzle, 
   decodeMultiLayer, 
@@ -43,7 +46,6 @@ import {
 
 const crosswordLayoutGenerator = require("crossword-layout-generator");
 
-// Raw puzzle data (will be obfuscated immediately)
 const rawPuzzleWords = [
     { clue: "We share business and five consecutive letters.", answer: "microsoft" },
     { clue: "That product? Solid.", answer: "hardware" },
@@ -57,13 +59,9 @@ const rawPuzzleWords = [
     { clue: "Neither here nor there on the scale of business.", answer: "smb" }
 ];
 
-// Create obfuscated puzzle data
 const puzzleData = createObfuscatedPuzzle(rawPuzzleWords);
-
-// Clear raw data from memory
 rawPuzzleWords.length = 0;
 
-// Create layout-compatible format with decoded answers (only when needed)
 const getLayoutWords = () => {
   return puzzleData.map(word => ({
     clue: word.clue,
@@ -94,13 +92,8 @@ function App() {
   const [time, setTime] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
 
-  // State to track if user came from completed puzzle
   const [completedPuzzleState, setCompletedPuzzleState] = useState(null);
-  
-  // State to control success modal visibility (separate from solved state)
   const [showSuccessModal, setShowSuccessModal] = useState(false);
-
-  // Timer effect
   useEffect(() => {
     let interval = null;
     if (!isPaused && !isSolved && currentScreen === "game") {
@@ -125,7 +118,6 @@ function App() {
   };
 
   const handleHome = () => {
-    // Go to home screen and reset game state
     setCurrentScreen("home");
     setTime(0);
     setIsPaused(false);
@@ -154,11 +146,9 @@ function App() {
     setIsSolved(false);
     setIncorrectCells([]);
     
-    // Set the first clue as active by default
     if (layoutData && layoutData.result) {
       const placedWords = layoutData.result.filter(w => w.orientation !== "none");
       if (placedWords.length > 0) {
-        // Find the first clue (lowest position number)
         const firstClue = placedWords.reduce((min, word) => 
           word.position < min.position ? word : min
         );
@@ -334,7 +324,7 @@ function App() {
       <div className="App home-screen">
         <div className="home-content">
           <div className="home-logo-container">
-            <img src={process.env.PUBLIC_URL + "/microMatrix.svg"} alt="micro matrix" className="home-logo" />
+            <img src={microMatrixSvg} alt="micro matrix" className="home-logo" />
           </div>
           <div className="home-buttons">
             <button onClick={startGame} className="home-btn play-btn">
@@ -354,16 +344,16 @@ function App() {
       <div className="App leaderboard-screen">
         <div className="header">
           <div className="logo-container" onClick={handleHome} style={{ cursor: 'pointer' }}>
-            <img src={process.env.PUBLIC_URL + "/microMatrix.svg"} alt="micro matrix" className="logo-img" />
+            <img src={microMatrixSvg} alt="micro matrix" className="logo-img" />
           </div>
           <div className="game-info centered">Week 1: Ingram Micro Kickoff</div>
           <div className="header-controls">
             <div className="timer">{formatTime(time)}</div>
             <button className="control-btn pause-btn" onClick={togglePause}>
-              <img src={process.env.PUBLIC_URL + "/Play/Pause.svg"} alt="pause" />
+              <img src={pauseSvg} alt="pause" />
             </button>
             <button className="control-btn home-btn" onClick={handleHome}>
-              <img src={process.env.PUBLIC_URL + "/Home.svg"} alt="home" />
+              <img src={homeSvg} alt="home" />
             </button>
           </div>
         </div>
@@ -405,16 +395,16 @@ function App() {
       
               <div className="header">
           <div className="logo-container" onClick={handleHome} style={{ cursor: 'pointer' }}>
-            <img src={process.env.PUBLIC_URL + "/microMatrix.svg"} alt="micro matrix" className="logo-img" />
+            <img src={microMatrixSvg} alt="micro matrix" className="logo-img" />
           </div>
           <div className="game-info centered">Week 1: Ingram Micro Kickoff</div>
           <div className="header-controls">
           <div className="timer">{formatTime(time)}</div>
           <button className="control-btn pause-btn" onClick={togglePause}>
-            <img src={process.env.PUBLIC_URL + "/Play/Pause.svg"} alt="pause" />
+            <img src={pauseSvg} alt="pause" />
           </button>
           <button className="control-btn home-btn" onClick={handleHome}>
-            <img src={process.env.PUBLIC_URL + "/Home.svg"} alt="home" />
+            <img src={homeSvg} alt="home" />
           </button>
         </div>
       </div>
