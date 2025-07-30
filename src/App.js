@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import Confetti from "react-confetti";
 import CrosswordGrid from "./components/CrosswordGrid";
 import SuccessModal from "./components/SuccessModal";
+import FailureModal from "./components/FailureModal";
 import Leaderboard from "./components/Leaderboard";
 import "./App.css";
 import microMatrixSvg from "./assets/microMatrix.svg";
@@ -94,6 +95,8 @@ function App() {
 
   const [completedPuzzleState, setCompletedPuzzleState] = useState(null);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [showFailureModal, setShowFailureModal] = useState(false);
+
   useEffect(() => {
     let interval = null;
     if (!isPaused && !isSolved && currentScreen === "game") {
@@ -130,6 +133,7 @@ function App() {
     setTime(0);
     setIsPaused(false);
     setIncorrectCells([]);
+    setShowFailureModal(false);
   };
 
   const generateNewPuzzle = () => {
@@ -170,6 +174,7 @@ function App() {
     setTime(0);
     setIsPaused(false);
     setShowSuccessModal(false);
+    setShowFailureModal(false);
     setIncorrectCells([]);
   };
 
@@ -179,6 +184,7 @@ function App() {
     setIsPaused(false);
     setIsSolved(false);
     setShowSuccessModal(false);
+    setShowFailureModal(false);
     setCompletedPuzzleState(null); // Clear completed puzzle state
     setIncorrectCells([]);
   };
@@ -191,7 +197,8 @@ function App() {
       setTime(completedPuzzleState.time);
       setStreak(completedPuzzleState.streak);
       setIsSolved(true);
-      setShowSuccessModal(false); // Don't show modal when returning from leaderboard
+      setShowSuccessModal(false); 
+      setShowFailureModal(false);// Don't show modal when returning from leaderboard
       setCurrentScreen("game");
       
       // Restore the active clue state, or set first clue as fallback
@@ -215,6 +222,10 @@ function App() {
   const closeSuccessModal = () => {
     setShowSuccessModal(false);
   };
+  
+  const closeFailureModal = () => {
+    setShowFailureModal(false);
+  }
 
   const goToLeaderboard = () => {
     // If coming from a solved puzzle, preserve the state
@@ -242,38 +253,44 @@ function App() {
   }, [userAnswers, layout.result]);
 
   // Check if puzzle is completed (for automatic success detection)
-  const checkForCompletion = () => {
-    if (!layout.result) return;
-    
-    let allFilled = true;
-    let allCorrect = true;
-    const placedWords = layout.result.filter((w) => w.orientation !== "none");
-    
-    placedWords.forEach((word) => {
-      for (let i = 0; i < word.answer.length; i++) {
-        const x = word.orientation === "across" ? word.startx - 1 + i : word.startx - 1;
-        const y = word.orientation === "down" ? word.starty - 1 + i : word.starty - 1;
-        
-        const userInput = userAnswers[y]?.[x];
-        const correctLetter = word.answer[i].toUpperCase();
-        
-        if (!userInput) {
-          allFilled = false;
-        } else if (userInput.toUpperCase() !== correctLetter) {
-          allCorrect = false;
-        }
-      }
-    });
+const checkForCompletion = () => {
+  if (!layout?.result) {
+    setShowFailureModal(true);
+    return;
+  }
 
-    // Only trigger success when puzzle is completely filled and correct
-    if (allFilled && allCorrect) {
-      setIsSolved(true);
-      setShowSuccessModal(true);
-      const newStreak = streak + 1;
-      setStreak(newStreak);
-      localStorage.setItem('crosswordStreak', newStreak.toString());
+  let allFilled = true;
+  let allCorrect = true;
+  const placedWords = layout.result.filter((w) => w.orientation !== "none");
+
+  placedWords.forEach((word) => {
+    for (let i = 0; i < word.answer.length; i++) {
+      const x = word.orientation === "across" ? word.startx - 1 + i : word.startx - 1;
+      const y = word.orientation === "down" ? word.starty - 1 + i : word.starty - 1;
+
+      const userInput = userAnswers?.[y]?.[x];
+      const correctLetter = word.answer[i].toUpperCase();
+
+      if (!userInput || userInput.trim() === "") {
+        allFilled = false;
+      } else if (userInput.toUpperCase() !== correctLetter) {
+        allCorrect = false;
+      }
     }
-  };
+  });
+
+  if (allFilled && allCorrect) {
+    setIsSolved(true);
+    setShowSuccessModal(true);
+    setShowFailureModal(false);
+    const newStreak = streak + 1;
+    setStreak(newStreak);
+    localStorage.setItem('crosswordStreak', newStreak.toString());
+  } else if (allFilled &&!allCorrect) {
+    setShowFailureModal(true);
+  }
+};
+
 
   const handleCellChange = (x, y, value) => {
     const newUserAnswers = [...userAnswers];
@@ -377,6 +394,13 @@ function App() {
           onClose={closeSuccessModal}
         />
       )}
+
+      {showFailureModal && (
+        <FailureModal 
+        onClose={closeFailureModal} 
+        />
+      )}
+
       
       {/* Pause Overlay */}
       {isPaused && (
