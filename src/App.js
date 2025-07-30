@@ -410,7 +410,7 @@ const checkForCompletion = () => {
             <button className="resume-btn" onClick={togglePause}>
               resume
             </button>
-            <button className="main-menu-btn" onClick={handleHome}>
+            <button className="main-menu-btn" onClick={handleHome}> 
               main menu
             </button>
           </div>
