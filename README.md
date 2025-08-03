@@ -1,6 +1,6 @@
 # Micro Matrix
 
-Weekly crossword puzzle game built with React.
+https://micromatrix.app/
 
 ## Quick Start
 
