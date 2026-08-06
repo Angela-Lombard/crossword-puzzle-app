@@ -328,6 +328,7 @@ function App() {
     } catch (e) {}
   };
 
+  // eslint-disable-next-line no-unused-vars -- kept for when the leaderboard UI comes back
   const submitScore = async (displayName, department) => {
     if (!puzzleId) return;
     try {
