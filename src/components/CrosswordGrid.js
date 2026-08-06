@@ -9,6 +9,7 @@ const CrosswordGrid = ({
   activeInfo,
   onActiveInfoChange,
   incorrectCells,
+  correctCells = [],
 }) => {
   const [selectedCell, setSelectedCell] = useState(null);
   const [isMobileDevice, setIsMobileDevice] = useState(false);
@@ -39,14 +40,18 @@ const CrosswordGrid = ({
     const startY = activeClue.starty - 1;
     
     if (activeClue.orientation === "across") {
-      return y === startY && x >= startX && x < startX + activeClue.answer.length;
+      return y === startY && x >= startX && x < startX + (activeClue.length || 0);
     } else {
-      return x === startX && y >= startY && y < startY + activeClue.answer.length;
+      return x === startX && y >= startY && y < startY + (activeClue.length || 0);
     }
   };
 
   const isCellIncorrect = (x, y) => {
     return incorrectCells.some(cell => cell.x === x && cell.y === y);
+  };
+
+  const isCellCorrect = (x, y) => {
+    return correctCells.some(cell => cell.x === x && cell.y === y);
   };
 
   const getCellNumber = (x, y) => {
@@ -65,9 +70,9 @@ const CrosswordGrid = ({
       const startX = word.startx - 1;
       const startY = word.starty - 1;
       if (word.orientation === "across") {
-        return y === startY && x >= startX && x < startX + word.answer.length;
+        return y === startY && x >= startX && x < startX + word.length;
       } else {
-        return x === startX && y >= startY && y < startY + word.answer.length;
+        return x === startX && y >= startY && y < startY + word.length;
       }
     });
 
@@ -130,9 +135,9 @@ const CrosswordGrid = ({
       const startX = word.startx - 1;
       const startY = word.starty - 1;
       if (word.orientation === "across") {
-        return y === startY && x >= startX && x < startX + word.answer.length;
+        return y === startY && x >= startX && x < startX + word.length;
       } else {
-        return x === startX && y >= startY && y < startY + word.answer.length;
+        return x === startX && y >= startY && y < startY + word.length;
       }
     });
 
@@ -192,7 +197,7 @@ const CrosswordGrid = ({
       }
       
       let nextIndex = currentIndex + 1;
-      while (nextIndex < activeClue.answer.length) {
+      while (nextIndex < (activeClue.length || 0)) {
         let nextX, nextY;
         
         if (activeClue.orientation === "across") {
@@ -229,7 +234,7 @@ const CrosswordGrid = ({
         const startX = word.startx - 1;
         const startY = word.starty - 1;
         
-        for (let i = 0; i < word.answer.length; i++) {
+        for (let i = 0; i < word.length; i++) {
           let cellX, cellY;
           if (word.orientation === "across") {
             cellX = startX + i;
@@ -269,7 +274,7 @@ const CrosswordGrid = ({
       const nextStartX = nextWord.startx - 1;
       const nextStartY = nextWord.starty - 1;
       
-      for (let i = 0; i < nextWord.answer.length; i++) {
+      for (let i = 0; i < nextWord.length; i++) {
         let cellX, cellY;
         if (nextWord.orientation === "across") {
           cellX = nextStartX + i;
@@ -397,6 +402,8 @@ const CrosswordGrid = ({
         case "ArrowRight":
           targetX = x + 1;
           break;
+        default:
+          break;
       }
       
       if (targetY >= 0 && targetY < grid.length && 
@@ -412,9 +419,9 @@ const CrosswordGrid = ({
           const startX = word.startx - 1;
           const startY = word.starty - 1;
           if (word.orientation === "across") {
-            return targetY === startY && targetX >= startX && targetX < startX + word.answer.length;
+            return targetY === startY && targetX >= startX && targetX < startX + word.length;
           } else {
-            return targetX === startX && targetY >= startY && targetY < startY + word.answer.length;
+            return targetX === startX && targetY >= startY && targetY < startY + word.length;
           }
         });
         
@@ -447,15 +454,16 @@ const CrosswordGrid = ({
               const isHighlighted = isCellInActiveWord(x, y);
               const isFocused = selectedCell && selectedCell.x === x && selectedCell.y === y;
               const isIncorrect = isCellIncorrect(x, y);
+              const isCorrect = !isIncorrect && isCellCorrect(x, y);
               const cellNumber = getCellNumber(x, y);
               
               const wordsAtCell = hasLetter ? placedWords.filter((word) => {
                 const startX = word.startx - 1;
                 const startY = word.starty - 1;
                 if (word.orientation === "across") {
-                  return y === startY && x >= startX && x < startX + word.answer.length;
+                  return y === startY && x >= startX && x < startX + word.length;
                 } else {
-                  return x === startX && y >= startY && y < startY + word.answer.length;
+                  return x === startX && y >= startY && y < startY + word.length;
                 }
               }) : [];
               
@@ -471,6 +479,8 @@ const CrosswordGrid = ({
                 }
                 if (isIncorrect) {
                   cellClass += ' incorrect';
+                } else if (isCorrect) {
+                  cellClass += ' correct';
                 }
                 if (cellNumber) {
                   cellClass += ' with-number';

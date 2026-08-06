@@ -1,22 +1,27 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import './Leaderboard.css';
 
-const Leaderboard = ({ onBackToHome, onBackToPuzzle, hasCompletedPuzzle }) => {
-  // Sample leaderboard data matching the design
-  const leaderboardData = [
-    { rank: 1, department: '[Blank] Department', points: 1000 },
-    { rank: 2, department: '[Blank] Department', points: 800 },
-    { rank: 3, department: '[Blank] Department', points: 600 },
-    { rank: 4, department: '[Blank] Department', points: 400 },
-    { rank: 5, department: '[Blank] Department', points: 200 },
-    { rank: 12, department: '[Your] Department', points: 80 },
-  ];
+const Leaderboard = ({ onBackToHome, onBackToPuzzle, hasCompletedPuzzle, apiBase = '' }) => {
+  const [entries, setEntries] = useState([]);
 
-  const podiumData = [
-    { position: 2, department: ['[Blank]', 'Department'], points: 800, label: '2nd' },
-    { position: 1, department: ['[Blank]', 'Department'], points: 1000, label: '1st' },
-    { position: 3, department: ['[Blank]', 'Department'], points: 600, label: '3rd' },
-  ];
+  useEffect(() => {
+    let isMounted = true;
+    fetch(`${apiBase}/api/leaderboard`)
+      .then(r => r.json())
+      .then(data => {
+        if (!isMounted) return;
+        setEntries(data.entries || []);
+      })
+      .catch(() => {});
+    return () => { isMounted = false; };
+  }, [apiBase]);
+
+  const podiumData = entries.slice(0, 3).map((e, idx) => ({
+    position: idx === 0 ? 1 : idx === 1 ? 2 : 3,
+    department: [e.displayName || 'Anonymous', e.department || ''],
+    points: e.points,
+    label: idx === 0 ? '1st' : idx === 1 ? '2nd' : '3rd'
+  }));
 
   return (
     <div className="leaderboard-container">
@@ -46,15 +51,13 @@ const Leaderboard = ({ onBackToHome, onBackToPuzzle, hasCompletedPuzzle }) => {
           </div>
           
           <div className="leaderboard-table">
-            {leaderboardData.map((item, index) => (
+            {entries.map((item, index) => (
               <React.Fragment key={index}>
-                {/* Add separator line before "[Your] Department" */}
-                {item.department.includes('[Your]') && <div className="separator-line"></div>}
                 <div 
-                  className={`leaderboard-row ${item.department.includes('[Your]') ? 'your-department' : ''}`}
+                  className={`leaderboard-row ${index === 0 ? 'your-department' : ''}`}
                 >
-                  <div className="rank-cell">{item.rank}</div>
-                  <div className="department-cell">{item.department}</div>
+                  <div className="rank-cell">{index + 1}</div>
+                  <div className="department-cell">{item.displayName || 'Anonymous'}{item.department ? ` (${item.department})` : ''}</div>
                   <div className="points-cell">{item.points}</div>
                 </div>
               </React.Fragment>
